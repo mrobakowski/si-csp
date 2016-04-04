@@ -1,12 +1,16 @@
 data class Variable<L : Any>(val label: L)
 
+infix fun <L : Any, V : Any> L.withDomain(domain: Iterable<V>) = Variable(this) to domain.toSet()
+
 data class Binding<L : Any, V : Any>(val variable: Variable<L>, val value: V) {
     override fun toString() = "`${variable.label}` = $value"
 
     constructor(kvp: Map.Entry<Variable<L>, V>) : this(kvp.key, kvp.value)
 }
 
-val <L : Any, V : Any> Map<Variable<L>, V>.bindings: Iterable<Binding<L, V>> get() = this.map { Binding(it.key, it.value) }
+infix fun <L : Any, V : Any> Variable<L>.bind(value: V) = Binding(this, value)
+val <L : Any, V : Any> Map<Variable<L>, V>.bindings: Iterable<Binding<L, V>>
+    get() = this.map { Binding(it.key, it.value) }
 fun <L : Any, V : Any> Map<Variable<L>, V>.binding(v: Variable<L>): Binding<L, V>? {
     return Binding(v, this[v] ?: return null)
 }
@@ -17,11 +21,21 @@ data class Constraint<L : Any, V : Any>(
         val constraintPred: (Binding<L, V>, Binding<L, V>) -> Boolean
 ) {
     fun isSatisfied(bindings: Map<Variable<L>, V>): Boolean {
-        return constraintPred(Binding(varA, bindings[varA] ?: return true), Binding(varB, bindings[varB] ?: return true))
+        return constraintPred(
+                Binding(varA, bindings[varA] ?: return true), // return true for unbound variables
+                Binding(varB, bindings[varB] ?: return true)
+        )
     }
 }
 
-data class Context<L : Any, V : Any>(val domains: Map<Variable<L>, Set<V>>, val bindings: Map<Variable<L>, V>, val constraints: CspSolver.ConstraintMap<L, V>)
+fun <L : Any, V : Any> constraint(varA: L, varB: L, constraintPred: (Binding<L, V>, Binding<L, V>) -> Boolean) =
+        Constraint(Variable(varA), Variable(varB), constraintPred)
+
+data class Context<L : Any, V : Any>(
+        val domains: Map<Variable<L>, Set<V>>,
+        val bindings: Map<Variable<L>, V>,
+        val constraints: CspSolver.ConstraintMap<L, V>
+)
 
 class CspSolver<L : Any, V : Any> {
     val variables: MutableMap<Variable<L>, Set<V>> = mutableMapOf() // map of variable to domain
@@ -68,10 +82,10 @@ class CspSolver<L : Any, V : Any> {
         var unboundVariableToDomainMap = variables.filterKeys { it !in initialBindings }
 
         // initial domains shrinkage
-        for (b in initialBindings.bindings) {
+        for (binding in initialBindings.bindings) {
             unboundVariableToDomainMap = domainShrinker(
                     Context(unboundVariableToDomainMap, initialBindings, constraintMap),
-                    b
+                    binding
             )
         }
 
@@ -106,7 +120,6 @@ class CspSolver<L : Any, V : Any> {
 }
 
 fun <L : Any, V : Any> solver(init: CspSolver<L, V>.() -> Unit) = CspSolver<L, V>().apply(init)
-infix fun <L : Any, V : Any> L.withDomain(domain: Iterable<V>) = Variable(this) to domain.toSet()
-infix fun <L : Any, V : Any> Variable<L>.bind(value: V) = Binding(this, value)
-fun <L : Any, V : Any> constraint(varA: L, varB: L, constraintPred: (Binding<L, V>, Binding<L, V>) -> Boolean) =
-        Constraint(Variable(varA), Variable(varB), constraintPred)
+
+
+
