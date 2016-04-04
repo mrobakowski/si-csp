@@ -41,8 +41,6 @@ class Test {
                     constraint(NSW, V, colorsNotEqual),
                     constraint(V, T, colorsNotEqual)
             )
-
-
         }
 
         val solution = s.solve()
