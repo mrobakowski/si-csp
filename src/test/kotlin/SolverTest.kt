@@ -57,4 +57,9 @@ class Test {
         if (solution == null) println("no solutions found")
         else solution.forEach(::println)
     }
+
+    @Test
+    fun testRange() {
+        (10..10).forEach(::println)
+    }
 }
