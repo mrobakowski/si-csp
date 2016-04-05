@@ -111,6 +111,7 @@ class CspSolver<L : Any, V : Any> {
                         Context(domains.filterKeys { it != variableToBind }, bindingsWithCurrent, constraintMap),
                         variableToBind bind value
                 )
+                if (shrunkDomains.values.any { it.isEmpty() }) return null
                 val solution = solve(bindingsWithCurrent, unboundVariablesWithoutCurrent, shrunkDomains)
                 if (solution != null) return solution
             }
