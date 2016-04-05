@@ -1,10 +1,11 @@
 import org.junit.Test
+import java.util.*
 
 enum class Color { red, green, blue }
 class Test {
     @Test fun testSolver() {
 
-        val s: CspSolver<String, Color> = solver {
+        val s = solver<String, Color> {
             val colors = setOf(Color.red, Color.green, Color.blue)
 
             val WA = "Western Australia"
@@ -41,6 +42,14 @@ class Test {
                     constraint(NSW, V, colorsNotEqual),
                     constraint(V, T, colorsNotEqual)
             )
+
+            shrinkDomains { binding ->
+                val newDomains: MutableMap<Variable<String>, Set<Color>> = HashMap(domains)
+                for (v in binding.affectedVariables) {
+                    newDomains[v] = (domains[v] ?: continue) - binding.value
+                }
+                newDomains
+            }
         }
 
         val solution = s.solve()

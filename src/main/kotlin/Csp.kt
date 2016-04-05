@@ -11,6 +11,7 @@ data class Binding<L : Any, V : Any>(val variable: Variable<L>, val value: V) {
 infix fun <L : Any, V : Any> Variable<L>.bind(value: V) = Binding(this, value)
 val <L : Any, V : Any> Map<Variable<L>, V>.bindings: Iterable<Binding<L, V>>
     get() = this.map { Binding(it.key, it.value) }
+
 fun <L : Any, V : Any> Map<Variable<L>, V>.binding(v: Variable<L>): Binding<L, V>? {
     return Binding(v, this[v] ?: return null)
 }
@@ -118,6 +119,12 @@ class CspSolver<L : Any, V : Any> {
         }
         return null
     }
+
+    val Binding<L, V>.affectedVariables: Iterable<Variable<L>>
+        get() = constraintMap[this.variable].map { if (it.varA == this.variable) it.varB else it.varA }
+
+    val Variable<L>.affectedVariables: Iterable<Variable<L>>
+        get() = constraintMap[this].map { if (it.varA == this) it.varB else it.varA }
 }
 
 fun <L : Any, V : Any> solver(init: CspSolver<L, V>.() -> Unit) = CspSolver<L, V>().apply(init)
