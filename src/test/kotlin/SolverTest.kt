@@ -62,4 +62,13 @@ class Test {
     fun testRange() {
         (10..10).forEach(::println)
     }
+
+    @Test
+    fun testQueens() {
+        nQueens(2)
+        nQueens(3)
+        nQueens(4)
+        nQueens(8)
+        nQueens(20)
+    }
 }
