@@ -45,6 +45,8 @@ fun nQueens(n: Int, forwardCheck: Boolean = true) {
                 shrunkDomains
             }
         }
+
+        chooseValue { variable, domain -> domain.min()!! }
     }
 
     val solution = s.solve()?.map { Pair(it.variable.label, it.value) }

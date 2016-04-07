@@ -1,3 +1,4 @@
+
 import org.junit.Test
 import java.util.*
 
@@ -70,5 +71,9 @@ class Test {
         nQueens(4)
         nQueens(8)
         nQueens(20)
+//        val bench = measureTimeMillis {
+//            for (i in 1..100) nQueens(20)
+//        } / 100.0 / 1000.0
+//        println("time: $bench") // ~0.429s
     }
 }
