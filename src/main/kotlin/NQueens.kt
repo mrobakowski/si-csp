@@ -1,6 +1,6 @@
 import java.util.*
 
-fun nQueens(n: Int, forwardCheck: Boolean = true) {
+fun nQueens(n: Int, forwardCheck: Boolean = true, printToStd: Boolean = true): List<Pair<Int, Int>>? {
     val s = solver<Int, Int> { // queen's x coord as variable label and y coord as its value
         val domain = 1..n
         for (queen in 1..n) {
@@ -52,19 +52,22 @@ fun nQueens(n: Int, forwardCheck: Boolean = true) {
     val solution = s.solve()?.map { Pair(it.variable.label, it.value) }
 
     if (solution == null) {
-        println("No solutions for n=$n")
-        return
+        if (printToStd) println("No solutions for n=$n")
+        return null
     }
 
-    for (i in 1..4*n+1) print('-')
-    println()
-    for (y in 1..n) {
-        for (x in 1..n) {
-            if (Pair(x, y) in solution) print("| Q ")
-            else print("|   ")
-        }
-        println('|')
-        for (i in 1..4*n+1) print('-')
+    if (printToStd) {
+        for (i in 1..4 * n + 1) print('-')
         println()
+        for (y in 1..n) {
+            for (x in 1..n) {
+                if (Pair(x, y) in solution) print("| Q ")
+                else print("|   ")
+            }
+            println('|')
+            for (i in 1..4 * n + 1) print('-')
+            println()
+        }
     }
+    return solution
 }
