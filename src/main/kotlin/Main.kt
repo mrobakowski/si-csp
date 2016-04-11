@@ -1,3 +1,5 @@
+
+import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.control.TextField
 import javafx.scene.input.MouseEvent
@@ -31,8 +33,9 @@ class HelloWorldView : View() {
                     val color = if (x % 2 xor y % 2 == 0) Color.BLACK else Color.WHITE
                     val tile = Pane().apply {
                         background = backgroundWithColor(color)
-                        prefWidth = width
-                        prefHeight = height
+                        prefWidth = 500.0
+                        prefHeight = 500.0
+                        useMaxSize = true
                     }
                     tiles += tile
                     checkerboard.add(tile, x, y)
@@ -59,8 +62,9 @@ class HelloWorldView : View() {
             for (y in 0..value - 1) {
                 for (x in 0..value - 1) {
                     val textField = TextField().apply {
-                        prefWidth = width
-                        prefHeight = height
+                        prefWidth = 500.0
+                        prefHeight = 500.0
+                        useMaxSize = true
                     }
                     sudokuCells += textField
                     sudoku.add(textField, x, y)
@@ -109,10 +113,11 @@ class HelloWorldView : View() {
                     topRowSudoku = hbox {
                         val dimens = textfield {
                             hboxConstraints { margin = Insets(5.0); }
+                            onAction = EventHandler { dimSudoku = text.toInt().let { it * it } }
                         }
                         button("Solve") {
                             hboxConstraints { margin = Insets(5.0) }
-                            onMouseClicked = javafx.event.EventHandler<MouseEvent> {
+                            onMouseClicked = EventHandler {
                                 dimSudoku = dimens.text.toInt().let { it * it }
                                 val progInd = topRowSudoku?.progressIndicator { prefHeight = 5.0 }
 
@@ -127,7 +132,7 @@ class HelloWorldView : View() {
                                         }
                                     }
 
-                                    sudoku(dimSudoku, sudokuValues)
+                                    sudoku(dimSudoku, sudokuValues, useVariableChoiceHeuristic = false)
                                 } ui {
                                     it?.forEachIndexed { i, it ->
                                         sudokuCells[i].text = it.toString()
@@ -135,6 +140,10 @@ class HelloWorldView : View() {
                                     topRowSudoku?.children?.remove(progInd)
                                 }
                             }
+                        }
+                        button("Clear") {
+                            hboxConstraints { margin = Insets(5.0) }
+                            onMouseClicked = EventHandler { sudokuCells.forEach { it.text = "" } }
                         }
                     }
                     _sudoku = gridpane()
@@ -147,7 +156,7 @@ class HelloWorldView : View() {
         dimSudoku = 9
 
         //        primaryStage.isResizable = false
-        //        primaryStage.width = 500.0
-        //        primaryStage.height = 597.0
+        primaryStage.width = 500.0
+        primaryStage.height = 597.0
     }
 }
