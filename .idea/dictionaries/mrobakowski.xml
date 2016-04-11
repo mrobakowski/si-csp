@@ -2,7 +2,9 @@
   <dictionary name="mrobakowski">
     <words>
       <w>coord</w>
+      <w>prog</w>
       <w>shrinker</w>
+      <w>sudoku</w>
     </words>
   </dictionary>
 </component>

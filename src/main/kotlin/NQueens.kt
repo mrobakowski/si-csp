@@ -47,6 +47,7 @@ fun nQueens(n: Int, forwardCheck: Boolean = true, printToStd: Boolean = true): L
         }
 
         chooseValue { variable, domain -> domain.min()!! }
+        chooseVariable { it.map { it to domains[it]?.size }.minBy { it.second ?: Int.MAX_VALUE }?.first!! }
     }
 
     val solution = s.solve()?.map { Pair(it.variable.label, it.value) }

@@ -1,4 +1,3 @@
-import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.control.TextField
 import javafx.scene.input.MouseEvent
@@ -49,6 +48,7 @@ class HelloWorldView : View() {
     var dimSudoku: Int
         get() = _dimSudoku
         set(value) {
+            if (value == dimSudoku) return
             if (value < 0) throw IllegalArgumentException("dimSudoku")
 
             sudoku.children.clear()
@@ -117,12 +117,20 @@ class HelloWorldView : View() {
                                 val progInd = topRowSudoku?.progressIndicator { prefHeight = 5.0 }
 
                                 background {
-                                    sudoku(dimSudoku, mapOf())
-                                } ui {
-                                    if (it != null) {
-                                        for (i in it) {
+                                    val sudokuValues: MutableMap<Pair<Int, Int>, Int> = mutableMapOf()
 
+                                    sudokuCells.forEachIndexed { i, it ->
+                                        if (!it.text.isNullOrBlank()) {
+                                            val x = it.text.toInt()
+                                            if (x < 0 || x > dimSudoku) throw IllegalArgumentException("Invalid sudoku value")
+                                            sudokuValues[i % dimSudoku to i / dimSudoku] = x
                                         }
+                                    }
+
+                                    sudoku(dimSudoku, sudokuValues)
+                                } ui {
+                                    it?.forEachIndexed { i, it ->
+                                        sudokuCells[i].text = it.toString()
                                     }
                                     topRowSudoku?.children?.remove(progInd)
                                 }
@@ -138,8 +146,8 @@ class HelloWorldView : View() {
         dimQueens = 9
         dimSudoku = 9
 
-//        primaryStage.isResizable = false
-//        primaryStage.width = 500.0
-//        primaryStage.height = 597.0
+        //        primaryStage.isResizable = false
+        //        primaryStage.width = 500.0
+        //        primaryStage.height = 597.0
     }
 }
