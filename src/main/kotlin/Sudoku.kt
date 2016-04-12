@@ -1,10 +1,14 @@
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 
 fun sudoku(
         dim: Int,
         initialCond: Map<Pair<Int, Int>, Int>,
         forwardCheck: Boolean = true,
-        useVariableChoiceHeuristic: Boolean = true
+        useVariableChoiceHeuristic: Boolean = true,
+        depth: Depth = Depth(0)
 ): List<Int>? {
     val s = solver<Pair<Int, Int>, Int> {
         val dimSqrt = Math.sqrt(dim.toDouble()).toInt()
@@ -69,13 +73,13 @@ fun sudoku(
 
         if (useVariableChoiceHeuristic) {
             chooseVariable { it.map { it to domains[it]?.size }.minBy { it.second ?: Int.MAX_VALUE }?.first!! }
-//            chooseVariable { it.minBy {  } }
+            //            chooseVariable { it.minBy {  } }
         }
 
         chooseValue { variable, domain -> domain.min()!! }
     }
 
-    val solution = s.solve()?.map { it.variable.label to it.value }?.toMap() ?: return null
+    val solution = s.solve(depth)?.map { it.variable.label to it.value }?.toMap() ?: return null
     val res = arrayListOf<Int>()
     for (y in 0..dim - 1) {
         for (x in 0..dim - 1) {
@@ -84,4 +88,19 @@ fun sudoku(
     }
 
     return res
+}
+
+fun loadSudoku(path: String): Pair<Int, Map<Pair<Int, Int>, Int>> {
+    val lines = Files.readAllLines(Paths.get(path))
+    val dim = lines[0].toInt().let { it * it }
+    val res = mutableMapOf<Pair<Int, Int>, Int>()
+    for (y in 0..dim - 1) {
+        val line = lines[y + 1]
+        val cells = line.split(" ")
+        for (x in 0..dim - 1) {
+            val value = cells[x].toInt()
+            if (value != 0) res += (x to y) to value
+        }
+    }
+    return dim to res
 }

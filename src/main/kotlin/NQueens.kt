@@ -1,6 +1,12 @@
 import java.util.*
 
-fun nQueens(n: Int, forwardCheck: Boolean = true, printToStd: Boolean = true): List<Pair<Int, Int>>? {
+fun nQueens(
+        n: Int,
+        forwardCheck: Boolean = true,
+        printToStd: Boolean = true,
+        useVariableChoiceHeuristic: Boolean = true,
+        depth: Depth = Depth(0)
+): List<Pair<Int, Int>>? {
     val s = solver<Int, Int> { // queen's x coord as variable label and y coord as its value
         val domain = 1..n
         for (queen in 1..n) {
@@ -47,10 +53,12 @@ fun nQueens(n: Int, forwardCheck: Boolean = true, printToStd: Boolean = true): L
         }
 
         chooseValue { variable, domain -> domain.min()!! }
-        chooseVariable { it.map { it to domains[it]?.size }.minBy { it.second ?: Int.MAX_VALUE }?.first!! }
+        if (useVariableChoiceHeuristic) {
+            chooseVariable { it.map { it to domains[it]?.size }.minBy { it.second ?: Int.MAX_VALUE }?.first!! }
+        }
     }
 
-    val solution = s.solve()?.map { Pair(it.variable.label, it.value) }
+    val solution = s.solve(depth)?.map { Pair(it.variable.label, it.value) }
 
     if (solution == null) {
         if (printToStd) println("No solutions for n=$n")
@@ -58,6 +66,7 @@ fun nQueens(n: Int, forwardCheck: Boolean = true, printToStd: Boolean = true): L
     }
 
     if (printToStd) {
+        println(depth)
         for (i in 1..4 * n + 1) print('-')
         println()
         for (y in 1..n) {

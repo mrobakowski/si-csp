@@ -1,4 +1,4 @@
-
+import javafx.collections.FXCollections
 import javafx.event.EventHandler
 import javafx.geometry.Insets
 import javafx.scene.control.TextField
@@ -132,7 +132,7 @@ class HelloWorldView : View() {
                                         }
                                     }
 
-                                    sudoku(dimSudoku, sudokuValues, useVariableChoiceHeuristic = false)
+                                    sudoku(dimSudoku, sudokuValues)
                                 } ui {
                                     it?.forEachIndexed { i, it ->
                                         sudokuCells[i].text = it.toString()
@@ -144,6 +144,34 @@ class HelloWorldView : View() {
                         button("Clear") {
                             hboxConstraints { margin = Insets(5.0) }
                             onMouseClicked = EventHandler { sudokuCells.forEach { it.text = "" } }
+                        }
+                        combobox<String> {
+                            hboxConstraints { margin = Insets(5.0) }
+                            items = FXCollections.observableList(listOf(
+                                    "sudoku/plik2-1.txt",
+                                    "sudoku/plik2-2.txt",
+                                    "sudoku/plik2-3.txt",
+                                    "sudoku/plik2-4.txt",
+                                    "sudoku/plik3-1.txt",
+                                    "sudoku/plik3-2.txt",
+                                    "sudoku/plik4-1.txt"
+                            ))
+
+                            onAction = EventHandler {
+                                val (dim, initial) = loadSudoku(selectedItem ?: return@EventHandler)
+                                dimens.text = Math.sqrt(dim.toDouble()).toInt().toString()
+                                dimSudoku = dim
+                                for (y in 0..dim - 1) {
+                                    for (x in 0..dim - 1) {
+                                        val i = x + y * dim
+                                        if (x to y in initial) {
+                                            sudokuCells[i].text = initial[x to y].toString()
+                                        } else {
+                                            sudokuCells[i].text = ""
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     _sudoku = gridpane()

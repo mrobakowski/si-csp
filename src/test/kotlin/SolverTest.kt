@@ -1,11 +1,10 @@
-
 import org.junit.Test
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 enum class Color { red, green, blue }
 class Test {
     @Test fun testSolver() {
-
         val s = solver<String, Color> {
             val colors = setOf(Color.red, Color.green, Color.blue)
 
@@ -59,21 +58,92 @@ class Test {
         else solution.forEach(::println)
     }
 
-    @Test
-    fun testRange() {
-        (10..10).forEach(::println)
-    }
 
     @Test
     fun testQueens() {
-        nQueens(2)
-        nQueens(3)
-        nQueens(4)
-        nQueens(8)
-        nQueens(20)
-//        val bench = measureTimeMillis {
-//            for (i in 1..100) nQueens(20)
-//        } / 100.0 / 1000.0
-//        println("time: $bench") // ~0.429s
+        val sizes = listOf(8, 12, 16, 20, 24, 28)
+
+        println("forward-check, heuristics")
+        sizes.forEach {
+            var depth = Depth(0)
+            val bench = measureTimeMillis {
+                depth = Depth(0)
+                for (i in 1..2) nQueens(it, forwardCheck = true, useVariableChoiceHeuristic = true, printToStd = false, depth = depth)
+            } / 2.0
+            println("$it\t$bench\t${depth.i}")
+        }
+
+        println("forward-check, no heuristics")
+        sizes.forEach {
+            var depth = Depth(0)
+            val bench = measureTimeMillis {
+                depth = Depth(0)
+                for (i in 1..2) nQueens(it, forwardCheck = true, useVariableChoiceHeuristic = false, printToStd = false, depth = depth)
+            } / 2.0
+            println("$it\t$bench\t${depth.i}")
+        }
+
+        println("backtrack, heuristics")
+        (sizes - 28).forEach {
+            var depth = Depth(0)
+            val bench = measureTimeMillis {
+                depth = Depth(0)
+                for (i in 1..2) nQueens(it, forwardCheck = false, useVariableChoiceHeuristic = true, printToStd = false, depth = depth)
+            } / 2.0
+            println("$it\t$bench\t${depth.i}")
+        }
+
+        println("backtrack, no heuristics")
+        (sizes - 28).forEach {
+            var depth = Depth(0)
+            val bench = measureTimeMillis {
+                depth = Depth(0)
+                for (i in 1..2) nQueens(it, forwardCheck = false, useVariableChoiceHeuristic = false, printToStd = false, depth = depth)
+            } / 2.0
+            println("$it\t$bench\t${depth.i}")
+        }
+    }
+
+    @Test
+    fun testSudoku() {
+        val sudokus = listOf(
+                loadSudoku("sudoku/plik2-1.txt"),
+                loadSudoku("sudoku/plik2-2.txt"),
+                loadSudoku("sudoku/plik2-3.txt"),
+                loadSudoku("sudoku/plik3-1.txt"),
+                loadSudoku("sudoku/plik3-2.txt")//,
+//                loadSudoku("sudoku/plik4-1.txt")
+        )
+
+        sudokus.forEach {
+            val (dim, sudoku) = it
+            println("fc+h")
+            var depth = Depth(0)
+            var bench = measureTimeMillis {
+                sudoku(dim, sudoku, depth = depth)
+            }
+            println("$bench\t${depth.i}")
+
+            println("fc")
+            depth = Depth(0)
+            bench = measureTimeMillis {
+                sudoku(dim, sudoku, useVariableChoiceHeuristic = false, depth = depth)
+            }
+            println("$bench\t${depth.i}")
+
+            println("bt+h")
+            depth = Depth(0)
+            bench = measureTimeMillis {
+                sudoku(dim, sudoku, forwardCheck = false, useVariableChoiceHeuristic = true, depth = depth)
+            }
+            println("$bench\t${depth.i}")
+
+            println("bt")
+            depth = Depth(0)
+            bench = measureTimeMillis {
+                sudoku(dim, sudoku, forwardCheck = false, useVariableChoiceHeuristic = false, depth = depth)
+            }
+            println("$bench\t${depth.i}")
+        }
     }
 }

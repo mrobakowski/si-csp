@@ -38,6 +38,8 @@ data class Context<L : Any, V : Any>(
         val constraints: CspSolver.ConstraintMap<L, V>
 )
 
+data class Depth(var i: Int)
+
 class CspSolver<L : Any, V : Any> {
     val variables: MutableMap<Variable<L>, Set<V>> = mutableMapOf() // map of variable to domain
     val constraints: MutableSet<Constraint<L, V>> = hashSetOf()
@@ -79,7 +81,7 @@ class CspSolver<L : Any, V : Any> {
         valueChooser = chooser
     }
 
-    fun solve(): Set<Binding<L, V>>? {
+    fun solve(depth: Depth = Depth(0)): Set<Binding<L, V>>? {
         var unboundVariableToDomainMap = variables.filterKeys { it !in initialBindings }
 
         // initial domains shrinkage
@@ -90,14 +92,16 @@ class CspSolver<L : Any, V : Any> {
             )
         }
 
-        return solve(initialBindings, unboundVariableToDomainMap.keys, unboundVariableToDomainMap)
+        return solve(initialBindings, unboundVariableToDomainMap.keys, unboundVariableToDomainMap, depth)
     }
 
     private fun solve(
             bindings: Map<Variable<L>, V>,
             unboundVariables: Set<Variable<L>>,
-            domains: Map<Variable<L>, Set<V>>
+            domains: Map<Variable<L>, Set<V>>,
+            depth: Depth = Depth(0)
     ): Set<Binding<L, V>>? {
+        depth.i++
         val variableToBind = variableChooser(Context(domains, bindings, constraintMap), unboundVariables)
         val domain = domains[variableToBind].let { if (it == null || it.isEmpty()) return null; it.toMutableSet() }
         val unboundVariablesWithoutCurrent = unboundVariables - variableToBind
@@ -112,8 +116,8 @@ class CspSolver<L : Any, V : Any> {
                         Context(domains.filterKeys { it != variableToBind }, bindingsWithCurrent, constraintMap),
                         variableToBind bind value
                 )
-                if (shrunkDomains.values.any { it.isEmpty() }) return null
-                val solution = solve(bindingsWithCurrent, unboundVariablesWithoutCurrent, shrunkDomains)
+                if (shrunkDomains.values.any { it.isEmpty() }) continue
+                val solution = solve(bindingsWithCurrent, unboundVariablesWithoutCurrent, shrunkDomains, depth)
                 if (solution != null) return solution
             }
         }
